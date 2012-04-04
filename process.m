@@ -1,2 +1,5 @@
 load trainx.txt
-trainx = normc(trainx);
+load trainy.csv
+load testx.txt
+knn = knnclassify(testx, trainx, trainy);
+csvwrite('testy.txt', knn)
