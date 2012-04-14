@@ -8,8 +8,11 @@ def loadtrainx():
 	f.close()
 	return vals
 
-def loadtrainy():
-	f = open('trainy.csv', 'r')
+def loadtrainy(unary = False):
+	if unary:
+		f = open('trainyun.csv', 'r')
+	else:
+		f = open('trainy.csv', 'r')
 	vals = [float(d.strip()) for d in f.readlines()]
 	f.close()
 	return vals
@@ -87,12 +90,50 @@ class node():
 
 
 
-def main():
+def loader():
+	#load data
 	trainx = loadtrainx()
 	trainy = loadtrainy()
+	#defined layers and create nodes
+	inp = [node() for i in range(5000)]
+	hid = [node() for i in range(8)]
+	out = [node() for i in range(5)]
+	for n in inp:
+		for h in hid:
+			n.connectTo(h, 0.2)
+	for h in hid:
+		for o in out:
+			h.connectTo(o, 0.2)
+	return inp, hid, out, trainx, trainy
+
+def process(inp, hid, out, xs, ys):
+	print "got "+str(len(inp))+" inputs"
+	print "got "+str(len(hid))+" hidden"
+	print "got "+str(len(out))+" output"
+	for song in range(len(xs[:10])):
+		#input values, feed forward
+		for d in range(len(xs[song])):
+			inp[d].feed(xs[song][d])
+		for h in hid:
+			h.forward()
+		for o in out:
+			o.forward()
+		#input targets, back prop
+		for targval in range(len(ys[song])):
+			out[targval].back(ys[song][targval])
+		for h in hid:
+			h.backward()
+		for h in hid:
+			h.update(0.4)
+		for o in out:
+			o.update(0.4)
+	return inp, hid, out, xs, ys
+
+def main():
+	return process(*loader())
 
 if __name__=='__main__':
-	#main()
+	inp, hid, out, trainx, trainy = main()
 	#pass
 
 def exampleFromHw7(passes = 1):
