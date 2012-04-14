@@ -3,7 +3,7 @@ load trainx.txt
 load trainy.csv
 load trainyun.csv
 load testx.txt
-firstsegtrain = trainx(:,1:25);
+%firstsegtrain = trainx(:,1:25);
 first4segtrain = trainx(:,1:100);
 net = network;
 net.numInputs = 1;
@@ -36,4 +36,8 @@ net = init(net);
 %[net,tr] = train(net, firstsegtrain', trainyun');
 [net,tr] = train(net, first4segtrain', trainyun');
 checky = net(first4segtrain');
-verif = [trainy checky'];
+verif = [trainy round(checky')];
+verif2 = [trainy checky'];
+first4oftest = testx(:,1:100);
+testy = net(first4oftest);
+csvwrite('testy.csv', testy);
