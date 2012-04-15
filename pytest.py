@@ -95,6 +95,31 @@ class node():
 			self.invites[i]['weight'] = self.invites[i]['weight'] + learnrate * self.delta * i.output
 
 
+def untodec(un):
+	dec = []
+	for u in un:
+		for i in range(len(u)):
+			found = -1
+			if round(u[i]) == 1:
+				if found != -1:
+					found = -1
+					break
+				found = i
+		if found == -1:
+			m = max(u)
+			for j in range(len(u)):
+				if u[j] == m:
+					found = j
+					break
+		dec.append(found)
+	return dec
+
+def setthrough(inp,hid,out,xs):
+	ys = []
+	for x in xs:
+		ys.append(through(inp,hid,out,x))
+	return ys
+
 def through(inp,hid,out,x):
 	for v in range(len(x)):
 		inp[v].feed(x[v])
