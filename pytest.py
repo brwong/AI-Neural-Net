@@ -1,9 +1,10 @@
 #!/usr/bin/python
 
 from math import exp
+from sys import stdout
 
 def loadtrainx():
-	f = open('trainx.txt', 'r')
+	f = open('normx.txt', 'r')
 	vals = [[float(d) for d in l.strip().split(' ')] for l in f.readlines()]
 	f.close()
 	return vals
@@ -113,11 +114,15 @@ def loader():
 	print "got y."
 	#defined layers and create nodes
 	inp = [node() for i in range(5000)]
-	hid = [node() for i in range(8)]
+	hid = [node() for i in range(3)]
 	out = [node() for i in range(5)]
-	for n in inp:
-		for h in hid:
-			n.connectTo(h, 0.2)
+	for n in range(len(inp)):
+		if not n % 25:
+			inp[n].connectTo(hid[0], 0.2)
+		elif n % 25 <= 12:
+			inp[n].connectTo(hid[1], 0.2)
+		else:
+			inp[n].connectTo(hid[2], 0.2)
 	for h in hid:
 		for o in out:
 			h.connectTo(o, 0.2)
@@ -132,8 +137,10 @@ def process(inp, hid, out, xs, ys):
 
 def train(inp, hid, out, xs, ys, passes):
 	for epoch in range(passes):
+		print ""
 		print "epoch", epoch
 		for song in range(len(xs)):
+			stdout.write(str(epoch).rjust(3,' ')+":"+str(song).ljust(4,' ')+"... ")
 			#input values, feed forward
 			for d in range(len(xs[song])):
 				inp[d].feed(xs[song][d])
@@ -150,6 +157,7 @@ def train(inp, hid, out, xs, ys, passes):
 				h.update(0.4)
 			for o in out:
 				o.update(0.4)
+		print [o.output for o in out], ys[song]
 	return inp, hid, out
 
 def main():
