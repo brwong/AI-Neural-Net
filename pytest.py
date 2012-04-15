@@ -132,7 +132,7 @@ def process(inp, hid, out, xs, ys):
 	print "got "+str(len(inp))+" inputs"
 	print "got "+str(len(hid))+" hidden"
 	print "got "+str(len(out))+" output"
-	inp, hid, out = train(inp, hid, out, xs[:1500], ys, 5)
+	inp, hid, out = train(inp, hid, out, xs, ys, 10)
 	return inp, hid, out, xs, ys
 
 def train(inp, hid, out, xs, ys, passes):
