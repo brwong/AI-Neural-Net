@@ -8,12 +8,15 @@ def loadtrainx():
 	f.close()
 	return vals
 
-def loadtrainy(unary = False):
-	if unary:
-		f = open('trainyun.csv', 'r')
-	else:
-		f = open('trainy.csv', 'r')
+def loadtrainy():
+	f = open('trainy.csv', 'r')
 	vals = [float(d.strip()) for d in f.readlines()]
+	f.close()
+	return vals
+
+def loadtrainyun():
+	f = open('trainyun.csv', 'r')
+	vals = [[int(d) for d in l.strip().split(' ')] for l in f.readlines()]
 	f.close()
 	return vals
 
@@ -24,6 +27,8 @@ def times(a, b):
 	return sum(map((lambda x,y:x*y), a, b))
 
 def sig(z):
+	if -z > 709:
+		return 0
 	return float(1)/(1 + exp(-z))
 
 def sigmoid(w, x):
@@ -89,11 +94,23 @@ class node():
 			self.invites[i]['weight'] = self.invites[i]['weight'] + learnrate * self.delta * i.output
 
 
+def through(inp,hid,out,x):
+	for v in range(len(x)):
+		inp[v].feed(x[v])
+	for h in hid:
+		h.forward()
+	for o in out:
+		o.forward()
+	return [o.output for o in out]
 
 def loader():
 	#load data
+	print "loading x..."
 	trainx = loadtrainx()
-	trainy = loadtrainy()
+	print "got x."
+	print "loading y..."
+	trainy = loadtrainyun()
+	print "got y."
 	#defined layers and create nodes
 	inp = [node() for i in range(5000)]
 	hid = [node() for i in range(8)]
@@ -110,23 +127,28 @@ def process(inp, hid, out, xs, ys):
 	print "got "+str(len(inp))+" inputs"
 	print "got "+str(len(hid))+" hidden"
 	print "got "+str(len(out))+" output"
-	for song in range(len(xs[:10])):
-		#input values, feed forward
-		for d in range(len(xs[song])):
-			inp[d].feed(xs[song][d])
-		for h in hid:
-			h.forward()
-		for o in out:
-			o.forward()
-		#input targets, back prop
-		for targval in range(len(ys[song])):
-			out[targval].back(ys[song][targval])
-		for h in hid:
-			h.backward()
-		for h in hid:
-			h.update(0.4)
-		for o in out:
-			o.update(0.4)
+	return train(inp, hid, out, xs[:100], ys, 100)
+
+def train(inp, hid, out, xs, ys, passes):
+	for epoch in range(10):
+		print "epoch", epoch
+		for song in range(len(xs)):
+			#input values, feed forward
+			for d in range(len(xs[song])):
+				inp[d].feed(xs[song][d])
+			for h in hid:
+				h.forward()
+			for o in out:
+				o.forward()
+			#input targets, back prop
+			for targval in range(len(ys[song])):
+				out[targval].back(ys[song][targval])
+			for h in hid:
+				h.backward()
+			for h in hid:
+				h.update(0.4)
+			for o in out:
+				o.update(0.4)
 	return inp, hid, out, xs, ys
 
 def main():
