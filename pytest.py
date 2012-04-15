@@ -127,10 +127,11 @@ def process(inp, hid, out, xs, ys):
 	print "got "+str(len(inp))+" inputs"
 	print "got "+str(len(hid))+" hidden"
 	print "got "+str(len(out))+" output"
-	return train(inp, hid, out, xs[:100], ys, 100)
+	inp, hid, out = train(inp, hid, out, xs[:1500], ys, 5)
+	return inp, hid, out, xs, ys
 
 def train(inp, hid, out, xs, ys, passes):
-	for epoch in range(10):
+	for epoch in range(passes):
 		print "epoch", epoch
 		for song in range(len(xs)):
 			#input values, feed forward
@@ -149,7 +150,7 @@ def train(inp, hid, out, xs, ys, passes):
 				h.update(0.4)
 			for o in out:
 				o.update(0.4)
-	return inp, hid, out, xs, ys
+	return inp, hid, out
 
 def main():
 	return process(*loader())
