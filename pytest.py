@@ -3,8 +3,16 @@
 from math import exp
 from sys import stdout
 
+## loading functions
+
 def loadtrainx():
 	f = open('normx.txt', 'r')
+	vals = [[float(d) for d in l.strip().split(' ')] for l in f.readlines()]
+	f.close()
+	return vals
+
+def loadtestx():
+	f = open('testx.txt', 'r')
 	vals = [[float(d) for d in l.strip().split(' ')] for l in f.readlines()]
 	f.close()
 	return vals
@@ -21,11 +29,15 @@ def loadtrainyun():
 	f.close()
 	return vals
 
+## vector operations
+
 def scalar(a, v):
 	return [a * n for n in v]
 
 def times(a, b):
 	return sum(map((lambda x,y:x*y), a, b))
+
+## sigmoid functions
 
 def sig(z):
 	if -z > 709:
@@ -35,6 +47,9 @@ def sig(z):
 def sigmoid(w, x):
 	return sig(times(w,x))
 
+# primary node class
+# the neural network is composed of these
+# it passes data forward and propagates backward
 class node():
 	def __init__(self, name = ""):
 		#self.weights = []
@@ -95,6 +110,8 @@ class node():
 			self.invites[i]['weight'] = self.invites[i]['weight'] + learnrate * self.delta * i.output
 
 
+# convert unary value arrays to decimal numbers
+# it does this by taking the highest number and returning its position
 def untodec(un):
 	dec = []
 	for u in un:
@@ -114,12 +131,14 @@ def untodec(un):
 		dec.append(found)
 	return dec
 
+# pass several tuples through the network
 def setthrough(inp,hid,out,xs):
 	ys = []
 	for x in xs:
 		ys.append(through(inp,hid,out,x))
 	return ys
 
+# pass one tuple into the network, return output
 def through(inp,hid,out,x):
 	for v in range(len(x)):
 		inp[v].feed(x[v])
@@ -129,6 +148,8 @@ def through(inp,hid,out,x):
 		o.forward()
 	return [o.output for o in out]
 
+# retrieve and return training data;
+# create and return neural network layers
 def loader():
 	#load data
 	print "loading x..."
@@ -142,30 +163,69 @@ def loader():
 	hid = [node() for i in range(3)]
 	out = [node() for i in range(5)]
 	for n in range(len(inp)):
+		#volume
 		if not n % 25:
-			inp[n].connectTo(hid[0], 0.2)
+			inp[n].connectTo(hid[0], 0.1)
+		#pitch
 		elif n % 25 <= 12:
-			inp[n].connectTo(hid[1], 0.2)
+			inp[n].connectTo(hid[1], 0.1)
+		#timbre
 		else:
-			inp[n].connectTo(hid[2], 0.2)
-	for h in hid:
-		for o in out:
-			h.connectTo(o, 0.2)
+			inp[n].connectTo(hid[2], 0.1)
+	#for h in hid:
+	#	h.biasweight = 0.1
+	#	for o in out:
+	#		h.connectTo(o, 0.1)
+	#		o.biasweight = 0.1
+	for o in out:
+		o.biasweight = 0.1
+	hid[0].biasweight = 0.1
+	for o in out:
+		hid[0].connectTo(o, 0.1)
+	hid[1].biasweight = 0.1
+	for o in out:
+		hid[1].connectTo(o, 0.1)
+	hid[2].biasweight = 0.3
+	for o in out:
+		hid[2].connectTo(o, 0.3)
 	return inp, hid, out, trainx, trainy
 
+# experimentation area (different number of training cycles, etc.)
 def process(inp, hid, out, xs, ys):
 	print "got "+str(len(inp))+" inputs"
 	print "got "+str(len(hid))+" hidden"
 	print "got "+str(len(out))+" output"
-	inp, hid, out = train(inp, hid, out, xs, ys, 40)
+	print "GOOD LUCK!!"
+	#inp, hid, out = train(inp, hid, out, xs, ys, 1)
+	#"""
+	testx = loadtestx()
+	totpasses = 0
+	for i in range(15):
+		totpasses += 1
+		inp, hid, out = train(inp, hid, out, xs, ys, 1)
+		yss = untodec([through(inp,hid,out,x) for x in xs])
+		f = open('c'+str(totpasses)+'.csv', 'w')
+		for y in yss:
+			f.write(str(y)+"\n")
+		f.close()
+		yss = untodec([through(inp,hid,out,x) for x in testx])
+		f = open('testyc'+str(totpasses)+'.csv', 'w')
+		for y in yss:
+			f.write(str(y)+"\n")
+		f.close()
+		print "did "+str(totpasses)+" passes."
+	#"""
 	return inp, hid, out, xs, ys
 
+#feed numbers in, back propagate, update weights
 def train(inp, hid, out, xs, ys, passes):
 	for epoch in range(passes):
 		print ""
 		print "epoch", epoch
 		for song in range(len(xs)):
 			stdout.write(str(epoch).rjust(3,' ')+":"+str(song).ljust(4,' ')+"... ")
+			if not song%10:
+				print ""
 			#input values, feed forward
 			for d in range(len(xs[song])):
 				inp[d].feed(xs[song][d])
@@ -179,9 +239,9 @@ def train(inp, hid, out, xs, ys, passes):
 			for h in hid:
 				h.backward()
 			for h in hid:
-				h.update(0.4)
+				h.update(0.1)
 			for o in out:
-				o.update(0.4)
+				o.update(0.1)
 		print [o.output for o in out], ys[song]
 	return inp, hid, out
 
@@ -192,6 +252,8 @@ if __name__=='__main__':
 	inp, hid, out, trainx, trainy = main()
 	#pass
 
+## this is a demonstration of the neural network
+## featured in homework 7, and its operation
 def exampleFromHw7(passes = 1):
 	#define layers and create nodes
 	inp = [node(i) for i in ["n1", "n2"]]
