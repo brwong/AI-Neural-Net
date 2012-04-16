@@ -139,15 +139,10 @@ def loader():
 	print "got y."
 	#defined layers and create nodes
 	inp = [node() for i in range(5000)]
-	hid = [node() for i in range(3)]
+	hid = [node() for i in range(200)]
 	out = [node() for i in range(5)]
 	for n in range(len(inp)):
-		if not n % 25:
-			inp[n].connectTo(hid[0], 0.2)
-		elif n % 25 <= 12:
-			inp[n].connectTo(hid[1], 0.2)
-		else:
-			inp[n].connectTo(hid[2], 0.2)
+		inp[n].connectTo(hid[n/200], 0.2)
 	for h in hid:
 		for o in out:
 			h.connectTo(o, 0.2)
@@ -157,7 +152,7 @@ def process(inp, hid, out, xs, ys):
 	print "got "+str(len(inp))+" inputs"
 	print "got "+str(len(hid))+" hidden"
 	print "got "+str(len(out))+" output"
-	inp, hid, out = train(inp, hid, out, xs, ys, 40)
+	inp, hid, out = train(inp, hid, out, xs, ys, 10)
 	return inp, hid, out, xs, ys
 
 def train(inp, hid, out, xs, ys, passes):
@@ -191,43 +186,4 @@ def main():
 if __name__=='__main__':
 	inp, hid, out, trainx, trainy = main()
 	#pass
-
-def exampleFromHw7(passes = 1):
-	#define layers and create nodes
-	inp = [node(i) for i in ["n1", "n2"]]
-	hid = [node(i) for i in ["n3", "n4"]]
-	out = [node(i) for i in ["n5", "n6", "n7"]]
-	for n in inp:
-		for h in hid:
-			n.connectTo(h, 0.2)
-	for h in hid:
-		for o in out:
-			h.connectTo(o, 0.2)
-	#input values, feed forward
-	for jj in range(passes):
-		inp[0].feed(0)
-		inp[1].feed(1)
-		for h in hid:
-			h.forward()
-		for o in out:
-			o.forward()
-		#input targets, back prop
-		out[0].back(1)
-		out[1].back(0)
-		out[2].back(0)
-		for h in hid:
-			h.backward()
-		for h in hid:
-			h.update(0.4)
-		for o in out:
-			o.update(0.4)
-	#test the trained network
-	inp[0].feed(0)
-	inp[1].feed(1)
-	for h in hid:
-		h.forward()
-	for o in out:
-		o.forward()
-	print "number of passes: "+str(passes)+" results:"
-	print [o.output for o in out]
 
