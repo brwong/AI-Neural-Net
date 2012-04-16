@@ -6,13 +6,13 @@ from sys import stdout
 ## loading functions
 
 def loadtrainx():
-	f = open('trainx.txt', 'r')
+	f = open('avgstrainx.txt', 'r')
 	vals = [[float(d) for d in l.strip().split(' ')] for l in f.readlines()]
 	f.close()
 	return vals
 
 def loadtestx():
-	f = open('testx.txt', 'r')
+	f = open('avgstestx.txt', 'r')
 	vals = [[float(d) for d in l.strip().split(' ')] for l in f.readlines()]
 	f.close()
 	return vals
@@ -159,35 +159,24 @@ def loader():
 	trainy = loadtrainyun()
 	print "got y."
 	#defined layers and create nodes
-	inp = [node() for i in range(5000)]
+	inp = [node() for i in range(25)]
 	hid = [node() for i in range(3)]
 	out = [node() for i in range(5)]
 	for n in range(len(inp)):
 		#volume
-		if not n % 25:
+		if n == 0:
 			inp[n].connectTo(hid[0], 0.1)
 		#pitch
-		elif n % 25 <= 12:
+		elif n <= 12:
 			inp[n].connectTo(hid[1], 0.1)
 		#timbre
 		else:
 			inp[n].connectTo(hid[2], 0.1)
-	#for h in hid:
-	#	h.biasweight = 0.1
-	#	for o in out:
-	#		h.connectTo(o, 0.1)
-	#		o.biasweight = 0.1
-	for o in out:
-		o.biasweight = 0.1
-	hid[0].biasweight = 0.1
-	for o in out:
-		hid[0].connectTo(o, 0.1)
-	hid[1].biasweight = 0.1
-	for o in out:
-		hid[1].connectTo(o, 0.1)
-	hid[2].biasweight = 0.3
-	for o in out:
-		hid[2].connectTo(o, 0.3)
+	for h in hid:
+		h.biasweight = 0.1
+		for o in out:
+			h.connectTo(o, 0.1)
+			o.biasweight = 0.1
 	return inp, hid, out, trainx, trainy
 
 # experimentation area (different number of training cycles, etc.)
@@ -204,16 +193,16 @@ def process(inp, hid, out, xs, ys):
 		totpasses += 1
 		inp, hid, out = train(inp, hid, out, xs, ys, 1)
 		yss = untodec([through(inp,hid,out,x) for x in xs])
-		f = open('d'+str(totpasses)+'.csv', 'w')
+		f = open('e'+str(totpasses)+'.csv', 'w')
 		for y in yss:
 			f.write(str(y)+"\n")
 		f.close()
 		yss = untodec([through(inp,hid,out,x) for x in testx])
-		f = open('testyd'+str(totpasses)+'.csv', 'w')
+		f = open('testye'+str(totpasses)+'.csv', 'w')
 		for y in yss:
 			f.write(str(y)+"\n")
 		f.close()
-		print "did "+str(totpasses)+" passes."
+		print "did "+str(totpasses)+" e passes."
 	#"""
 	return inp, hid, out, xs, ys
 
